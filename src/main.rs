@@ -5,21 +5,21 @@ extern crate random;
 use threadpool::ThreadPool;
 use std::sync::mpsc::channel;
 
-const TEST_TASKS : usize = 8;
-const NUM_THREADS : usize = 2;
+const TEST_TASKS : usize = 128;
+const NUM_THREADS : usize = 64;
 
 fn main() {
   println!("Hello, lasttest!");
   
   let pool = ThreadPool::new(NUM_THREADS);
   
-  println!("Static started...");
+  println!("\nStatic started...");
   run_static(&pool);
-  println!("Static finished");
+  println!("Static finished\n");
   
-  println!("Communicating started...");
+  println!("\nCommunicating started...");
   run_communicating(&pool);
-  println!("Communicating finished");
+  println!("Communicating finished\n");
 }
 
 fn run_static(pool : &ThreadPool) {
@@ -49,18 +49,24 @@ fn run_static(pool : &ThreadPool) {
     });
   }
   
-  println!("Result b{}", rx.iter().take(TEST_TASKS).fold(0, |a, b| a + b));
+  println!("Result {}", rx.iter().take(TEST_TASKS).fold(0, |a, b| a + b));
 }
 
 fn run_communicating(pool : &ThreadPool) {
-  let (sender, receiver) = channel();
+  let versuche : u64 = 42000000;
+  let (sender, receiver) = channel::<(u64, u64)>();
   
-  for i in 0..TEST_TASKS {
+  for _ in 0..TEST_TASKS {
     let sender = sender.clone();
     pool.execute(move|| {
-      sender.send(pi_approx_random(42000000, rand::random::<f64>)).unwrap()
+      sender.send(pi_approx_random(versuche, rand::random::<f64>)).unwrap()
     });
   }
+  
+  println!("Result run_communicating: {}", receiver.iter().take(TEST_TASKS)
+            .map(|(inside, _)| 4.0 * inside as f64)
+            .fold(0.0, |a : f64, b : f64| a + (b / (versuche as f64) ) )
+            / TEST_TASKS as f64);
 }
 
 fn int_rant() {
@@ -83,10 +89,10 @@ fn int_rant() {
 }
 
 fn float_rand() {
-  let mut pi_approx : f64 = 0.0;
+  let pi_approx : f64;
   let step_size : f64 = 0.00001;
   let mut current_x : f64 = 0.0;
-  let mut current_y : f64 = 0.0;
+  let mut current_y : f64;
   
   let mut inside : u64 = 0;
   let mut outside : u64 = 0;
