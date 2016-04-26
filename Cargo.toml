@@ -1,0 +1,9 @@
+[package]
+name = "lasttest"
+version = "0.1.0"
+authors = ["vp"]
+
+[dependencies]
+threadpool = "1.0"
+rand = "0.3"
+random = "0.9"
