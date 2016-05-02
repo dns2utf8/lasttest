@@ -4,26 +4,33 @@ extern crate random;
 
 use threadpool::ThreadPool;
 use std::sync::mpsc::channel;
+use std::time::Instant;
 
-const TEST_TASKS : usize = 128;
-const NUM_THREADS : usize = 64;
+const TEST_TASKS : usize = 3;
+const NUM_THREADS : usize = 3;
 
 fn main() {
-  println!("Hello, lasttest!");
+  println!("Hello, lasttest!\n\nNUM_THREADS: {}\nTEST_TASKS: {}", NUM_THREADS, TEST_TASKS);
   
   let pool = ThreadPool::new(NUM_THREADS);
   
   println!("\nStatic started...");
+  let start = Instant::now();
   run_static(&pool);
-  println!("Static finished\n");
+  let duration = start.elapsed();
+  println!("Static finished <=> pool.active_count() = {} // duration = {:?}\n", pool.active_count(), duration);
   
   println!("\nCommunicating started...");
+  let start = Instant::now();
   run_communicating(&pool);
-  println!("Communicating finished\n");
+  let duration = start.elapsed();
+  println!("Communicating finished <=> pool.active_count() = {} // duration = {:?}\n", pool.active_count(), duration);
 }
 
 fn run_static(pool : &ThreadPool) {
+  let versuche : usize = 10_000_000;
   let (tx, rx) = channel();
+  
   for i in 0..TEST_TASKS {
     let j = i +1;
     let tx = tx.clone();
@@ -34,12 +41,19 @@ fn run_static(pool : &ThreadPool) {
           42
         },
         2 => {
-          float_rand();
+          float_steps();
           23
+        },
+        3 => {
+          let start = Instant::now();
+          pi_approx_random(versuche as u64, rand::random::<f64>);
+          let duration = start.elapsed();
+          println!("static pi_approx_random finished <=> duration = {:?}\n",   duration);
+          13
         },
         _ => {
           let mut v = vec![];
-          for i in 0..10000000 {
+          for i in 0..versuche {
               v.push(i % j);
           }
           v.len()
@@ -53,7 +67,7 @@ fn run_static(pool : &ThreadPool) {
 }
 
 fn run_communicating(pool : &ThreadPool) {
-  let versuche : u64 = 42000000;
+  let versuche : u64 = 42_000_000;
   let (sender, receiver) = channel::<(u64, u64)>();
   
   for _ in 0..TEST_TASKS {
@@ -80,7 +94,7 @@ fn int_rant() {
     } else {
       for f in 2..10000000 {
         let r = b.wrapping_mul(f);
-        if r == 0 {
+        if r == 0 { // should never be true, but can not be known at compile time
           println!("{} times {} is 0", b, f);
         }
       }
@@ -88,7 +102,7 @@ fn int_rant() {
   }
 }
 
-fn float_rand() {
+fn float_steps() {
   let pi_approx : f64;
   let step_size : f64 = 0.00001;
   let mut current_x : f64 = 0.0;
