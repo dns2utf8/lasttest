@@ -7,3 +7,5 @@ authors = ["vp"]
 threadpool = "1.0"
 rand = "0.3"
 random = "0.9"
+crossbeam = "0.2"
+num_cpus = "0.2"
