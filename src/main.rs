@@ -203,7 +203,7 @@ fn float_steps() {
     current_x += step_size;
   }
   
-  println!("Pi: {}", format_pi_approx((inside, outside)));
+  println!("float_steps.pi: {}", format_pi_approx((inside, inside+outside)));
 }
 
 /// (inside : u64, tries : u64)
@@ -253,6 +253,7 @@ fn run_flood(pool: &ThreadPool) {
   let (t_outside, r_outside) = channel();
   let (t, r) = channel();
   
+  // Collect all inside
   pool.execute(move || {
     let mut inside = 0;
     for _ in 0..TEST_TASKS {
@@ -264,6 +265,7 @@ fn run_flood(pool: &ThreadPool) {
       }
     }
     
+    println!("floot.collected all inside: {}", inside);
     t.send(inside).is_ok();
   });
   
@@ -289,6 +291,7 @@ fn run_flood(pool: &ThreadPool) {
     });
   }
   
+  // Collect all outside
   let mut outside = 0;
   for _ in 0..TEST_TASKS {
     loop {
@@ -297,6 +300,7 @@ fn run_flood(pool: &ThreadPool) {
         None => break
       }
     }
+    println!("floot.collected all outside: {}", outside);
   }
   let inside = r.recv().unwrap();
   

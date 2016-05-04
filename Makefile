@@ -12,7 +12,7 @@ compileDocker: clean
 	docker run --rm -it -v $$(pwd):/compile -e TARGET_UID="$$(id --user)" -e TARGET_GID="$$(id --group)" dns2utf8/rust-old
 
 deploy: compileDocker
-	ssh mathhsr 'cat > lasttest' < target/release/lasttest
+	ssh mathhsro 'cat > lasttest' < target/release/lasttest
 
 clean:
 	rm -rf target || true
