@@ -21,19 +21,14 @@ const USAGE: &'static str = "
 Naval Fate.
 
 Usage:
-  lasttest (all | static | communicating | chain | flood | mesh)
+  lasttest all
+  lasttest [static] [communicating] [chain] [flood] [mesh]
   lasttest (-h | --help)
-  lasttest --version
-
 Options:
   -h --help     Show this screen.
-  --version     Show version.
-  --speed=<kn>  Speed in knots [default: 10].
-  --moored      Moored (anchored) mine.
-  --drifting    Drifting mine.
 ";
 
-#[derive(Debug, RustcDecodable)]
+#[derive(Debug,PartialEq,RustcDecodable)]
 struct Args {
   cmd_all: bool,
   cmd_static: bool,
@@ -43,21 +38,39 @@ struct Args {
   cmd_mesh: bool,
 }
 
-fn validate_args(a : &mut Args) {
-  if a.cmd_all {
-    a.cmd_static = true;
-    a.cmd_communicating = true;
-    a.cmd_chain = true;
-    a.cmd_flood = true;
-    a.cmd_mesh = true;
+fn validate_args(a : Args) -> Result<Args,String>  {
+  let empty = Args {
+    cmd_all: false,
+    cmd_static: false,
+    cmd_communicating: false,
+    cmd_chain: false,
+    cmd_flood: false,
+    cmd_mesh: false,
+  };
+  
+  if a == empty {
+    return Err("you must pick at least one target".into());
   }
+  
+  Ok(if a.cmd_all {
+      Args {
+        cmd_all: true,
+        cmd_static: true,
+        cmd_communicating: true,
+        cmd_chain: true,
+        cmd_flood: true,
+        cmd_mesh: true,
+      }
+    } else {
+      a
+    })
 }
 
 fn main() {
-  let mut args: Args = Docopt::new(USAGE)
+  let args: Args = Docopt::new(USAGE)
                             .and_then(|d| d.decode())
                             .unwrap_or_else(|e| e.exit());
-  validate_args(&mut args);
+  let args: Args = validate_args(args).unwrap();
   println!("{:?}", args);
   let num_threads = num_cpus::get();
   
