@@ -1,54 +1,109 @@
+const TEST_TASKS  : usize = 128_00;
+const VERSUCHE    : u64   = 42_000;
+
+
 extern crate threadpool;
 extern crate rand;
 extern crate random;
 extern crate crossbeam;
 extern crate num_cpus;
+extern crate docopt;
+extern crate rustc_serialize;
+
 
 use threadpool::ThreadPool;
+use crossbeam::sync::chase_lev;
+use docopt::Docopt;
 use std::sync::mpsc::channel;
 use std::time::Instant;
 
-use crossbeam::sync::chase_lev;
+const USAGE: &'static str = "
+Naval Fate.
 
-const TEST_TASKS  : usize = 128_00; // 128;
-const VERSUCHE    : u64   = 42_000;
+Usage:
+  lasttest (all | static | communicating | chain | flood | mesh)
+  lasttest (-h | --help)
+  lasttest --version
+
+Options:
+  -h --help     Show this screen.
+  --version     Show version.
+  --speed=<kn>  Speed in knots [default: 10].
+  --moored      Moored (anchored) mine.
+  --drifting    Drifting mine.
+";
+
+#[derive(Debug, RustcDecodable)]
+struct Args {
+  cmd_all: bool,
+  cmd_static: bool,
+  cmd_communicating: bool,
+  cmd_chain: bool,
+  cmd_flood: bool,
+  cmd_mesh: bool,
+}
+
+fn validate_args(a : &mut Args) {
+  if a.cmd_all {
+    a.cmd_static = true;
+    a.cmd_communicating = true;
+    a.cmd_chain = true;
+    a.cmd_flood = true;
+    a.cmd_mesh = true;
+  }
+}
 
 fn main() {
+  let mut args: Args = Docopt::new(USAGE)
+                            .and_then(|d| d.decode())
+                            .unwrap_or_else(|e| e.exit());
+  validate_args(&mut args);
+  println!("{:?}", args);
   let num_threads = num_cpus::get();
   
   println!("Hello, lasttest!\n\nnum_threads: {}\nTEST_TASKS: {}\nVERSUCHE: {}", num_threads, TEST_TASKS, VERSUCHE);
   
   let pool = ThreadPool::new(num_threads);
   
-  println!("\nStatic started...");
-  let start = Instant::now();
-  run_static(&pool);
-  let duration = start.elapsed();
-  println!("Static finished <=> pool.active_count() = {} // duration = {:?}\n", pool.active_count(), duration);
+  if args.cmd_static {
+    println!("\nStatic started...");
+    let start = Instant::now();
+    run_static(&pool);
+    let duration = start.elapsed();
+    println!("Static finished <=> pool.active_count() = {} // duration = {:?}\n", pool.active_count(), duration);
+  }
   
-  println!("\nCommunicating started...");
-  let start = Instant::now();
-  run_communicating(&pool);
-  let duration = start.elapsed();
-  println!("Communicating finished <=> pool.active_count() = {} // duration = {:?}\n", pool.active_count(), duration);
+  if args.cmd_communicating {
+    println!("\nCommunicating started...");
+    let start = Instant::now();
+    run_communicating(&pool);
+    let duration = start.elapsed();
+    println!("Communicating finished <=> pool.active_count() = {} // duration = {:?}\n", pool.active_count(), duration);
+  }
   
-  println!("\nChain started...");
-  let start = Instant::now();
-  run_chain(&pool);
-  let duration = start.elapsed();
-  println!("Chain finished <=> pool.active_count() = {} // duration = {:?}\n", pool.active_count(), duration);
+  if args.cmd_chain {
+    println!("\nChain started...");
+    let start = Instant::now();
+    run_chain(&pool);
+    let duration = start.elapsed();
+    println!("Chain finished <=> pool.active_count() = {} // duration = {:?}\n", pool.active_count(), duration);
+  }
   
-  println!("\nFlood started...");
-  let start = Instant::now();
-  run_flood(&pool);
-  let duration = start.elapsed();
-  println!("Flood finished <=> pool.active_count() = {} // duration = {:?}\n", pool.active_count(), duration);
+  if args.cmd_flood {
+    println!("\nFlood started...");
+    let start = Instant::now();
+    run_flood(&pool);
+    let duration = start.elapsed();
+    println!("Flood finished <=> pool.active_count() = {} // duration = {:?}\n", pool.active_count(), duration);
+  }
   
-  println!("\nMesh started...");
-  let start = Instant::now();
-  run_mesh(&pool);
-  let duration = start.elapsed();
-  println!("Mesh finished <=> pool.active_count() = {} // duration = {:?}\n", pool.active_count(), duration);
+  if args.cmd_mesh {
+    println!("\nMesh started...");
+    let start = Instant::now();
+    run_mesh(&pool);
+    let duration = start.elapsed();
+    println!("Mesh finished <=> pool.active_count() = {} // duration = {:?}\n", pool.active_count(), duration);
+  }
 }
 
 fn run_static(pool : &ThreadPool) {
