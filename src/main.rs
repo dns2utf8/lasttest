@@ -13,9 +13,10 @@ extern crate rustc_serialize;
 
 use threadpool::ThreadPool;
 use crossbeam::sync::chase_lev;
+use crossbeam::sync::chase_lev::Steal::{Empty, Abort, Data};
 use docopt::Docopt;
 use std::sync::mpsc::channel;
-use std::time::Instant;
+use std::time::{Instant, Duration};
 
 const USAGE: &'static str = "
 Naval Fate.
@@ -39,6 +40,7 @@ struct Args {
 }
 
 fn validate_args(a : Args) -> Result<Args,String>  {
+  //println!("{:?}", args);
   let empty = Args {
     cmd_all: false,
     cmd_static: false,
@@ -71,7 +73,6 @@ fn main() {
                             .and_then(|d| d.decode())
                             .unwrap_or_else(|e| e.exit());
   let args: Args = validate_args(args).unwrap();
-  println!("{:?}", args);
   let num_threads = num_cpus::get();
   
   println!("Hello, lasttest!\n\nnum_threads: {}\nTEST_TASKS: {}\nVERSUCHE: {}", num_threads, TEST_TASKS, VERSUCHE);
@@ -323,85 +324,112 @@ fn run_flood(pool: &ThreadPool) {
 
 fn run_mesh(pool : &ThreadPool) {
   let versuche = VERSUCHE;
-  let v : Vec<usize> = vec![23, 42, 666, 521, 8192, 0x056b, 0xe660, 0x4c74, 0x8ca5, 0xa224, 0x2b36, 0x9d11, 0x26ab, 0xc2d2, 0xbd39, 0x1fd3, 0x55b4, 0x168f, 0xff9b, 0x3ee2, 0x0342];
+  let v : Vec<usize> = vec![23, 42, 666, 521, 8192,
+    0x056b, 0xe660, 0x4c74, 0x8ca5, 0x12f6, 0xb000, 0x0a14, 0x40ee,
+    0xa224, 0x2b36, 0x9d11, 0x26ab, 0xc2d2, 0xbd39, 0x5d63, 0x9e93,
+    0x1fd3, 0x55b4, 0x168f, 0xff9b, 0x3ee2, 0x0342, 0x1cd3, 0x8782,
+    0xb321, 0x14e3, 0x7aeb, 0xea8e, 0xd8d2, 0xe43f, 0xd8ee, 0x7a50,
+    0x3990, 0x7137, 0xe668, 0xceae, 0x2bfd, 0xd99e, 0x974d, 0x855d,
+    0xf4dd, 0xe8db, 0x31a7, 0x4388, 0x6907, 0x283f, 0x3ae2, 0xf9d6,
+    0x6987, 0x235d, 0xdaa9, 0x6e0f, 0x3ca8, 0xccab, 0x732f, 0x29e3,
+    0x4daf, 0xd6cd, 0xf463, 0x6786, 0xc835, 0x9e5b, 0xd5e6, 0x97e1,
+    0x0675, 0x83eb, 0x3392, 0x5cda, 0x8c4b, 0x72e9, 0xed2f, 0x4042,
+    0x8bfc, 0x2f52, 0xae13, 0x7666, 0x65c7, 0x2300, 0x50fc, 0xc6f6,
+    0xed82, 0xa637, 0xca83, 0x2b08, 0x95b1, 0x67c0, 0x954c, 0x060c,
+  ];
   let n_v = v.len();
   
   let (tx, rx) = channel();
   
   for b in v {
-    let sender = tx.clone();
+    let tx = tx.clone();
     pool.execute(move || {
       let h = b.wrapping_mul(0x9E3779B97F4A7C15);
       
       if h == 0 {
-        sender.send(format!("Hash of {} is 0", b)).unwrap();
+        tx.send(format!("Hash of {} is 0", b)).unwrap();
       } else {
-        for f in 2..10000000 {
+        for f in 2..10_000_000 {
           let r = b.wrapping_mul(f);
           if r == 0 { // should never be true, but can not be known at compile time
-            sender.send(format!("{} times {} is 0", b, f)).is_ok();
+            tx.send(format!("{} times {} is 0", b, f)).is_ok();
           }
         }
       }
+      
+      tx.send(format!("{}", h)).is_ok();
     });
   }
+  println!("Pool size: {}", pool.active_count());
+  
   
   let (mut worker, stealer) = chase_lev::deque();
-  
   pool.execute(move || {
+    let mut i = 0;
     for _ in 0..n_v {
+      //sleep(23);
+      //println!("step1.retransmit into chase_lev");
       worker.push(rx.recv().unwrap());
+      i += 1;
     }
+    println!("Rerouted {} of {} numbers into deque", i, n_v);
   });
   
+  
   let (tx3, rx3) = channel();
-  //let q = ms_queue::MsQueue::new();
   for _ in 0..n_v {
     let stealer = stealer.clone();
     let tx3 = tx3.clone();
     
     pool.execute(move|| {
-      let seed = stealer.steal();
-      println!("run_communicating.step2 steal: {:?}", seed);
-      
-      /*{
+      let seed;
+      loop {
         match stealer.steal() {
-          Ok(seed_in) => {
+          Empty => { sleep(1); }
+          Data(seed_in) => {
             seed = seed_in;
-          },
-          Err(e) => {
-            println!("run_communicating.step2 error: {:?}", e);
-            return;
+            println!("run_communicating.step2 steal: {:?}", seed);
+            break;
           }
+          Abort => { println!("Aborting..."); return; }
         }
-      }*/
+        
+      }
       
       //let rng : rand::StdRng = rand::SeedableRng::from_seed(seed);
       let r = pi_approx_random(versuche as u64, rand::random::<f64>);
       tx3.send(r).unwrap();
     });
   }
+  println!("Pool size: {}", pool.active_count());
   
-  pool.execute(move|| {
+  
+  /*pool.execute(move|| {
     match rx3.recv() {
       Ok(r) => { println!("run_communicating.step3 ok: {:?}", r); },
       Err(e) => {
         println!("run_communicating.step3 error: {:?}", e);
       }
     }
-  });
+  });*/
+  
   
   // SpinnLock
-  let mut i : usize = 0;
-  let mut j : usize = 0;
-  while pool.active_count() > 0 {
-    i += 1;
-    if i > 10_000_000 {
-      println!("Waiting in SpinnLock ... {}, pool: {}", j, pool.active_count());
-      i = 0;
-      j += 1;
+  let mut i : usize = n_v;
+  let mut pi = (0, 0);
+  println!("Pool size: {}", pool.active_count());
+  while pool.active_count() > 0 || i > 0 {
+    if let Ok(n) = rx3.try_recv() {
+      pi = (pi.0+n.0, pi.1+n.1);
+      println!("run_mesh.step3 recv: {:?}", format_pi_approx(pi));
+      i -= 1;
+    } else {
+      sleep(666);
+      println!("Waiting in SpinnLock ... remaining numbers: {}, pool: {}", i, pool.active_count());
     }
   }
+  
+  println!("Pool is empty");
 }
 
 
@@ -409,3 +437,6 @@ fn format_pi_approx((inside, tries) : (u64, u64)) -> f64 {
   (4 as f64) * (inside as f64) / (tries as f64)
 }
 
+fn sleep(ms : u64) {
+  std::thread::sleep(Duration::from_millis(ms))
+}
