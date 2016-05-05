@@ -279,7 +279,7 @@ fn run_flood(pool: &ThreadPool) {
       }
     }
     
-    println!("floot.collected all inside: {}", inside);
+    println!("flood.collected all inside: {}", inside);
     t.send(inside).is_ok();
   });
   
@@ -314,8 +314,8 @@ fn run_flood(pool: &ThreadPool) {
         None => break
       }
     }
-    println!("floot.collected all outside: {}", outside);
   }
+  println!("flood.collected all outside: {}", outside);
   let inside = r.recv().unwrap();
   
   println!("flood.pi: {}", format_pi_approx( (inside, inside+outside) ));
@@ -347,7 +347,7 @@ fn run_mesh(pool : &ThreadPool) {
       let h = b.wrapping_mul(0x9E3779B97F4A7C15);
       
       if h == 0 {
-        tx.send(format!("Hash of {} is 0", b)).unwrap();
+        tx.send(format!("Hash of {} is 0", b)).is_ok();
       } else {
         for f in 2..10_000_000 {
           let r = b.wrapping_mul(f);
@@ -360,7 +360,7 @@ fn run_mesh(pool : &ThreadPool) {
       tx.send(format!("{}", h)).is_ok();
     });
   }
-  println!("Pool size: {}", pool.active_count());
+  println!("Pool size #0: {}", pool.active_count());
   
   
   let (mut worker, stealer) = chase_lev::deque();
@@ -374,6 +374,7 @@ fn run_mesh(pool : &ThreadPool) {
     }
     println!("Rerouted {} of {} numbers into deque", i, n_v);
   });
+  println!("Pool size #1: {}", pool.active_count());
   
   
   let (tx3, rx3) = channel();
@@ -401,17 +402,7 @@ fn run_mesh(pool : &ThreadPool) {
       tx3.send(r).unwrap();
     });
   }
-  println!("Pool size: {}", pool.active_count());
-  
-  
-  /*pool.execute(move|| {
-    match rx3.recv() {
-      Ok(r) => { println!("run_communicating.step3 ok: {:?}", r); },
-      Err(e) => {
-        println!("run_communicating.step3 error: {:?}", e);
-      }
-    }
-  });*/
+  println!("Pool size #2: {}", pool.active_count());
   
   
   // SpinnLock
