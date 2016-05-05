@@ -33,6 +33,8 @@ install:
 # ???
 build: false
 
+version: '0.1.0.{build}'
+
 # Equivalent to Travis' `script` phase
 # TODO modify this phase as you see fit
 test_script:
