@@ -7,15 +7,14 @@ It is designed for NUMA-Systems
 ## Run local
 
 ```
-make run
+cargo run --release all
 ```
 
 ## Adapt deploy
 Edit this line in the Makefile:
 
 ```Makefile
-deploy: compileDocker
-	ssh mathhsr 'cat > lasttest' < target/release/lasttest
+TARGET_HOST="huge.cluster.machine.edu"
 ```
 
 and replace the `mathhsr` with your host.
