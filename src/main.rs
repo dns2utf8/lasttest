@@ -389,7 +389,7 @@ fn run_mesh(pool : &ThreadPool) {
           Empty => { sleep(1); }
           Data(seed_in) => {
             seed = seed_in;
-            println!("run_communicating.step2 steal: {:?}", seed);
+            //println!("run_communicating.step2 steal: {:?}", seed);
             break;
           }
           Abort => { println!("Aborting..."); return; }
@@ -412,7 +412,7 @@ fn run_mesh(pool : &ThreadPool) {
   while pool.active_count() > 0 || i > 0 {
     if let Ok(n) = rx3.try_recv() {
       pi = (pi.0+n.0, pi.1+n.1);
-      println!("run_mesh.step3 recv: {:?}", format_pi_approx(pi));
+      //println!("run_mesh.step3 recv: {:?}", format_pi_approx(pi));
       i -= 1;
     } else {
       sleep(666);
