@@ -367,7 +367,6 @@ fn run_mesh(pool : &ThreadPool) {
   pool.execute(move || {
     let mut i = 0;
     for _ in 0..n_v {
-      //sleep(23);
       //println!("step1.retransmit into chase_lev");
       worker.push(rx.recv().unwrap());
       i += 1;
@@ -397,7 +396,8 @@ fn run_mesh(pool : &ThreadPool) {
         
       }
       
-      //let rng : rand::StdRng = rand::SeedableRng::from_seed(seed);
+      //let rng : fn() -> f64 = rand::SeedableRng::from_seed(seed);
+      //let r = pi_approx_random(versuche as u64, rng);
       let r = pi_approx_random(versuche as u64, rand::random::<f64>);
       tx3.send(r).unwrap();
     });
@@ -408,7 +408,6 @@ fn run_mesh(pool : &ThreadPool) {
   // SpinnLock
   let mut i : usize = n_v;
   let mut pi = (0, 0);
-  println!("Pool size: {}", pool.active_count());
   while pool.active_count() > 0 || i > 0 {
     if let Ok(n) = rx3.try_recv() {
       pi = (pi.0+n.0, pi.1+n.1);
