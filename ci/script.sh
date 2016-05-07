@@ -35,9 +35,9 @@ run_test_suite() {
     export RUST_TEST_THREADS=1
   fi
 
-  cargo build --target $TARGET --verbose
-  cargo run --target $TARGET static communicating chain mesh
-  cargo test --target $TARGET
+  cargo build --target $TARGET --verbose --release
+  cargo test --target $TARGET --release
+  cargo run --target $TARGET --release static communicating chain mesh
 
   # sanity check the file type
   file target/$TARGET/debug/hello
