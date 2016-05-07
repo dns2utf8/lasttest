@@ -16,8 +16,7 @@ env:
 # TODO Feel free to remove the channels/targets you don't need
 # NOTE Make *sure* you don't remove a reference (&foo) if you are going to dereference it (*foo)
 matrix:
-  include:
-    # Stable channel
+  allow_failures:
     - os: linux
       env: TARGET=armv7-unknown-linux-gnueabihf CHANNEL=stable
       sudo: required
@@ -42,13 +41,6 @@ matrix:
     #      packages: &i686_unknown_linux_gnu
     #        # Cross compiler and cross compiled C libraries
     #        - gcc-multilib
-    - os: osx
-      env: TARGET=x86_64-apple-darwin CHANNEL=stable
-    - os: linux
-      env: TARGET=x86_64-unknown-linux-gnu CHANNEL=stable
-    - os: linux
-      env: TARGET=x86_64-unknown-linux-musl CHANNEL=stable
-    # Beta channel
     - os: linux
       env: TARGET=armv7-unknown-linux-gnueabihf CHANNEL=beta
       # sudo is needed for binfmt_misc, which is needed for transparent user qemu emulation
@@ -64,13 +56,6 @@ matrix:
     #  addons:
     #    apt:
     #      packages: *i686_unknown_linux_gnu
-    - os: osx
-      env: TARGET=x86_64-apple-darwin CHANNEL=beta
-    - os: linux
-      env: TARGET=x86_64-unknown-linux-gnu CHANNEL=beta
-    - os: linux
-      env: TARGET=x86_64-unknown-linux-musl CHANNEL=beta
-    # Nightly channel
     - os: linux
       env: TARGET=armv7-unknown-linux-gnueabihf CHANNEL=nightly
       sudo: required
@@ -85,6 +70,22 @@ matrix:
     #  addons:
     #    apt:
     #      packages: *i686_unknown_linux_gnu
+  include:
+    # Stable channel
+    - os: osx
+      env: TARGET=x86_64-apple-darwin CHANNEL=stable
+    - os: linux
+      env: TARGET=x86_64-unknown-linux-gnu CHANNEL=stable
+    - os: linux
+      env: TARGET=x86_64-unknown-linux-musl CHANNEL=stable
+    # Beta channel
+    - os: osx
+      env: TARGET=x86_64-apple-darwin CHANNEL=beta
+    - os: linux
+      env: TARGET=x86_64-unknown-linux-gnu CHANNEL=beta
+    - os: linux
+      env: TARGET=x86_64-unknown-linux-musl CHANNEL=beta
+    # Nightly channel
     - os: osx
       env: TARGET=x86_64-apple-darwin CHANNEL=nightly
     - os: linux

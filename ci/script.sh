@@ -40,7 +40,7 @@ run_test_suite() {
   cargo run --target $TARGET --release static communicating chain mesh
 
   # sanity check the file type
-  file target/$TARGET/debug/hello
+  file target/$TARGET/release/lasttest
 }
 
 main() {
