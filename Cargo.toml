@@ -5,6 +5,7 @@ authors = ["Stefan Schindler <dns2utf8@estada.ch>"]
 
 [dependencies]
 threadpool = "1.0"
+#threadpool = { git="https://github.com/dns2utf8/rust-threadpool.git", branch="atomic" }
 rand = "0.3"
 #random = "0.9"
 crossbeam = "0.2"
