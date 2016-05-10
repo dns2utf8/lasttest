@@ -6,7 +6,7 @@ authors = ["Stefan Schindler <dns2utf8@estada.ch>"]
 [dependencies]
 threadpool = "1.0"
 rand = "0.3"
-random = "0.9"
+#random = "0.9"
 crossbeam = "0.2"
 num_cpus = "0.2"
 docopt = "0.6"

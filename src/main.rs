@@ -4,7 +4,7 @@ const VERSUCHE    : u64   = 42_000;
 
 extern crate threadpool;
 extern crate rand;
-extern crate random;
+//extern crate random;
 extern crate crossbeam;
 extern crate num_cpus;
 extern crate docopt;
