@@ -36,7 +36,7 @@ version: '0.1.0.{build}'
 test_script:
   - cargo build --release
   - cargo test --release
-  - cargo run --release static communicating chain mesh
+  - cargo run --release local static communicating chain mesh
 
 before_deploy:
   # Generate artifacts for release

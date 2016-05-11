@@ -37,7 +37,7 @@ run_test_suite() {
 
   cargo build --target $TARGET --verbose --release
   cargo test --target $TARGET --release
-  cargo run --target $TARGET --release static communicating chain mesh
+  cargo run --target $TARGET --release local static communicating chain mesh
 
   # sanity check the file type
   file target/$TARGET/release/lasttest
