@@ -12,7 +12,7 @@ Windows: <a href="https://ci.appveyor.com/project/dns2utf8/lasttest" target="_bl
 ## Run local
 
 ```
-cargo run --release all
+cargo run --release local all
 ```
 
 ## Adapt deploy
