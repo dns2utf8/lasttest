@@ -13,41 +13,65 @@ extern crate rustc_serialize;
 mod local;
 
 use local::{run_chain, run_communicating, run_flood, run_mesh, run_static};
-use std::time::{Instant, Duration};
+use std::time::{Instant};
 use threadpool::ThreadPool;
 use docopt::Docopt;
 
 
 const USAGE: &'static str = "
-Naval Fate.
+lasttest is a load generator written in rust optimized for NUMA systems.
 
 Usage:
-  lasttest all
-  lasttest [static] [communicating] [chain] [flood] [mesh]
+  lasttest <module> <command>
+  lasttest local all
+  lasttest local [static] [communicating] [chain] [flood] [mesh]
+  lasttest net server [<port>]
+  lasttest net client <servername> [<port>]
   lasttest (-h | --help)
-Options:
+
+Module:
   -h --help     Show this screen.
+
+The tests are split into two groups:
+  local     running on one machine
+  net       running on two machines and transfer load betweend them
 ";
 
 #[derive(Debug,PartialEq,RustcDecodable)]
 struct Args {
+  // local options
+  cmd_local: bool,
   cmd_all: bool,
   cmd_static: bool,
   cmd_communicating: bool,
   cmd_chain: bool,
   cmd_flood: bool,
   cmd_mesh: bool,
+  
+  // net options
+  cmd_net: bool,
+  cmd_server: bool,
+  cmd_client: bool,
+  arg_port: u16,
+  arg_servername: String,
 }
 
 fn validate_args(a : Args) -> Result<Args,String>  {
-  //println!("{:?}", args);
+  println!("{:?}", a);
   let empty = Args {
+    cmd_local: true,
     cmd_all: false,
     cmd_static: false,
     cmd_communicating: false,
     cmd_chain: false,
     cmd_flood: false,
     cmd_mesh: false,
+    
+    cmd_net: false,
+    cmd_server: false,
+    cmd_client: false,
+    arg_port: 0,
+    arg_servername: "".into(),
   };
   
   if a == empty {
@@ -56,12 +80,19 @@ fn validate_args(a : Args) -> Result<Args,String>  {
   
   Ok(if a.cmd_all {
       Args {
+        cmd_local: true,
         cmd_all: true,
         cmd_static: true,
         cmd_communicating: true,
         cmd_chain: true,
         cmd_flood: true,
         cmd_mesh: true,
+        
+        cmd_net: false,
+        cmd_server: false,
+        cmd_client: false,
+        arg_port: 0,
+        arg_servername: "".into(),
       }
     } else {
       a
