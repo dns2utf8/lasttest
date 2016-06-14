@@ -11,8 +11,11 @@ extern crate docopt;
 extern crate rustc_serialize;
 
 mod local;
+mod net;
 
-use local::{run_chain, run_communicating, run_flood, run_mesh, run_static};
+use local::main_local;
+use net::main_net;
+
 use std::time::{Instant};
 use threadpool::ThreadPool;
 use docopt::Docopt;
@@ -38,7 +41,7 @@ The tests are split into two groups:
 ";
 
 #[derive(Debug,PartialEq,RustcDecodable)]
-struct Args {
+pub struct Args {
   // local options
   cmd_local: bool,
   cmd_all: bool,
@@ -108,46 +111,14 @@ fn main() {
   
   println!("Hello, lasttest!\n\nnum_threads: {}\nTEST_TASKS: {}\nVERSUCHE: {}", num_threads, TEST_TASKS, VERSUCHE);
   
-  let pool = ThreadPool::new(num_threads);
+  let pool = ThreadPool::new_with_name("lasttest.local".into(), num_threads);
   
-  if args.cmd_static {
-    println!("\nStatic started...");
-    let start = Instant::now();
-    run_static(&pool);
-    let duration = start.elapsed();
-    println!("Static finished <=> pool.active_count() = {} // duration = {:?}\n", pool.active_count(), duration);
+  if args.cmd_local {
+    main_local(&args, &pool);
   }
   
-  if args.cmd_communicating {
-    println!("\nCommunicating started...");
-    let start = Instant::now();
-    run_communicating(&pool);
-    let duration = start.elapsed();
-    println!("Communicating finished <=> pool.active_count() = {} // duration = {:?}\n", pool.active_count(), duration);
-  }
-  
-  if args.cmd_chain {
-    println!("\nChain started...");
-    let start = Instant::now();
-    run_chain(&pool);
-    let duration = start.elapsed();
-    println!("Chain finished <=> pool.active_count() = {} // duration = {:?}\n", pool.active_count(), duration);
-  }
-  
-  if args.cmd_flood {
-    println!("\nFlood started...");
-    let start = Instant::now();
-    run_flood(&pool);
-    let duration = start.elapsed();
-    println!("Flood finished <=> pool.active_count() = {} // duration = {:?}\n", pool.active_count(), duration);
-  }
-  
-  if args.cmd_mesh {
-    println!("\nMesh started...");
-    let start = Instant::now();
-    run_mesh(&pool);
-    let duration = start.elapsed();
-    println!("Mesh finished <=> pool.active_count() = {} // duration = {:?}\n", pool.active_count(), duration);
+  if args.cmd_net {
+    main_net(&args, &pool);
   }
 }
 

@@ -10,6 +10,48 @@ use std::time::{Instant, Duration};
 use rand;
 use std;
 
+pub fn main_local(args : &::Args, pool : &ThreadPool) {
+  if args.cmd_static {
+    println!("\nStatic started...");
+    let start = Instant::now();
+    run_static(&pool);
+    let duration = start.elapsed();
+    println!("Static finished <=> pool.active_count() = {} // duration = {:?}\n", pool.active_count(), duration);
+  }
+  
+  if args.cmd_communicating {
+    println!("\nCommunicating started...");
+    let start = Instant::now();
+    run_communicating(&pool);
+    let duration = start.elapsed();
+    println!("Communicating finished <=> pool.active_count() = {} // duration = {:?}\n", pool.active_count(), duration);
+  }
+  
+  if args.cmd_chain {
+    println!("\nChain started...");
+    let start = Instant::now();
+    run_chain(&pool);
+    let duration = start.elapsed();
+    println!("Chain finished <=> pool.active_count() = {} // duration = {:?}\n", pool.active_count(), duration);
+  }
+  
+  if args.cmd_flood {
+    println!("\nFlood started...");
+    let start = Instant::now();
+    run_flood(&pool);
+    let duration = start.elapsed();
+    println!("Flood finished <=> pool.active_count() = {} // duration = {:?}\n", pool.active_count(), duration);
+  }
+  
+  if args.cmd_mesh {
+    println!("\nMesh started...");
+    let start = Instant::now();
+    run_mesh(&pool);
+    let duration = start.elapsed();
+    println!("Mesh finished <=> pool.active_count() = {} // duration = {:?}\n", pool.active_count(), duration);
+  }
+}
+
 pub fn run_static(pool : &ThreadPool) {
   let versuche : usize = 1_000_000;
   let (tx, rx) = channel();
