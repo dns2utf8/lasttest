@@ -25,7 +25,6 @@ const USAGE: &'static str = "
 lasttest is a load generator written in rust optimized for NUMA systems.
 
 Usage:
-  lasttest <module> <command>
   lasttest local all
   lasttest local [static] [communicating] [chain] [flood] [mesh]
   lasttest net server [<port>]
@@ -60,28 +59,35 @@ pub struct Args {
 }
 
 fn validate_args(a : Args) -> Result<Args,String>  {
-  println!("{:?}", a);
-  let empty = Args {
-    cmd_local: true,
+  //println!("{:?}", a);
+  let mut empty = Args {
+    cmd_local: false,
     cmd_all: false,
     cmd_static: false,
     cmd_communicating: false,
     cmd_chain: false,
     cmd_flood: false,
     cmd_mesh: false,
-    
+
     cmd_net: false,
     cmd_server: false,
     cmd_client: false,
     arg_port: 0,
     arg_servername: "".into(),
   };
+
+  if a.cmd_local {
+    empty.cmd_local = true;
+  } else {
+    empty.cmd_net = true;
+  }
   
   if a == empty {
     return Err("you must pick at least one target".into());
   }
+
   
-  Ok(if a.cmd_all {
+  Ok(if a.cmd_local && a.cmd_all {
       Args {
         cmd_local: true,
         cmd_all: true,
@@ -113,6 +119,9 @@ fn main() {
   
   let pool = ThreadPool::new_with_name("lasttest.local".into(), num_threads);
   
+  let start = Instant::now();
+
+
   if args.cmd_local {
     main_local(&args, &pool);
   }
@@ -120,5 +129,7 @@ fn main() {
   if args.cmd_net {
     main_net(&args, &pool);
   }
+
+  println!("\n Was running for {:?}\n", start.elapsed());
 }
 
