@@ -16,13 +16,11 @@ cargo run --release local all
 ```
 
 ## Adapt deploy
-Edit this line in the Makefile:
+Edit this line in the Makefile to set your target host:
 
 ```Makefile
 TARGET_HOST="huge.cluster.machine.edu"
 ```
-
-and replace the `mathhsr` with your host.
 
 # Contribute
 
