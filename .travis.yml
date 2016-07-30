@@ -1,4 +1,5 @@
 language: generic
+depth: 1
 
 env:
   global:
@@ -70,6 +71,16 @@ matrix:
     #  addons:
     #    apt:
     #      packages: *i686_unknown_linux_gnu
+    # Beta channel
+    - os: linux
+      env: TARGET=x86_64-unknown-linux-musl CHANNEL=beta
+    # Nightly channel
+    - os: osx
+      env: TARGET=x86_64-apple-darwin CHANNEL=nightly
+    - os: linux
+      env: TARGET=x86_64-unknown-linux-gnu CHANNEL=nightly
+    - os: linux
+      env: TARGET=x86_64-unknown-linux-musl CHANNEL=nightly
   include:
     # Stable channel
     - os: osx
@@ -83,15 +94,6 @@ matrix:
       env: TARGET=x86_64-apple-darwin CHANNEL=beta
     - os: linux
       env: TARGET=x86_64-unknown-linux-gnu CHANNEL=beta
-    - os: linux
-      env: TARGET=x86_64-unknown-linux-musl CHANNEL=beta
-    # Nightly channel
-    - os: osx
-      env: TARGET=x86_64-apple-darwin CHANNEL=nightly
-    - os: linux
-      env: TARGET=x86_64-unknown-linux-gnu CHANNEL=nightly
-    - os: linux
-      env: TARGET=x86_64-unknown-linux-musl CHANNEL=nightly
 
 before_install:
   - export PATH="$PATH:$HOME/.cargo/bin"
