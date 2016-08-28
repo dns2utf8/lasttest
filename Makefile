@@ -5,7 +5,7 @@ default: compile
 	# done
 
 run: clean
-	cargo run --release
+	cargo run --release local all
 
 compile:
 	cargo build --release
