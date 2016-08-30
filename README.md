@@ -9,6 +9,8 @@ Linux and Mac: [![Build Status](https://travis-ci.org/dns2utf8/lasttest.svg?bran
 
 Windows: <a href="https://ci.appveyor.com/project/dns2utf8/lasttest" target="_blank"><img src="https://ci.appveyor.com/api/projects/status/github/dns2utf8/lasttest?svg=true" width="120px"></a>
 
+[![Clippy Linting Result](https://clippy.bashy.io/github/dns2utf8/lasttest/master/badge.svg)](https://clippy.bashy.io/github/dns2utf8/lasttest/master/log)
+
 ## Run local
 
 ```
