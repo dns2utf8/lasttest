@@ -25,14 +25,15 @@ const USAGE: &'static str = "
 lasttest is a load generator written in rust optimized for NUMA systems.
 
 Usage:
-  lasttest local all
-  lasttest local [static] [communicating] [chain] [flood] [mesh]
-  lasttest net server [<port>]
-  lasttest net client <servername> [<port>]
+  lasttest [options] local all
+  lasttest [options] local [static] [communicating] [chain] [flood] [mesh]
+  lasttest [options] net server [<port>]
+  lasttest [options] net client <servername> [<port>]
   lasttest (-h | --help)
 
-Module:
+Options:
   -h --help     Show this screen.
+  --logical     Use all logical CPUs not just the pyisical
 
 The tests are split into two groups:
   local     running on one machine
@@ -41,6 +42,9 @@ The tests are split into two groups:
 
 #[derive(Debug,PartialEq,RustcDecodable)]
 pub struct Args {
+  // global options
+  flag_logical: bool,
+
   // local options
   cmd_local: bool,
   cmd_all: bool,
@@ -61,6 +65,8 @@ pub struct Args {
 fn validate_args(a : Args) -> Result<Args,String>  {
   //println!("{:?}", a);
   let mut empty = Args {
+    flag_logical: a.flag_logical,
+
     cmd_local: false,
     cmd_all: false,
     cmd_static: false,
@@ -89,6 +95,8 @@ fn validate_args(a : Args) -> Result<Args,String>  {
   
   Ok(if a.cmd_local && a.cmd_all {
       Args {
+        flag_logical: a.flag_logical,
+
         cmd_local: true,
         cmd_all: true,
         cmd_static: true,
@@ -113,7 +121,11 @@ fn main() {
                             .and_then(|d| d.decode())
                             .unwrap_or_else(|e| e.exit());
   let args: Args = validate_args(args).unwrap();
-  let num_threads = num_cpus::get();
+  let num_threads = if args.flag_logical {
+    num_cpus::get()
+  } else {
+    num_cpus::get_physical()
+  };
   
   println!("Hello, lasttest!\n\nnum_threads: {}\nTEST_TASKS: {}\nVERSUCHE: {}", num_threads, TEST_TASKS, VERSUCHE);
   
