@@ -36,5 +36,5 @@ Pull Requests are very welcome.
 ./lasttest: /lib64/libc.so.6: version `GLIBC_2.18' not found (required by ./lasttest)
 ```
 
-If you encounter this error, use the docker container to build lasttest with an older libc.
+If you encounter this error, use the docker container to build lasttest with an older libc or use the `compile-musl` and `compile-musl` target.
 

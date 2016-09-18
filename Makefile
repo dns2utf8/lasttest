@@ -4,11 +4,17 @@ TARGET_HOST="mathhsro"
 default: compile
 	# done
 
-run: clean
+run:
 	cargo run --release local all
+
+run-musl:
+	cargo run --target x86_64-unknown-linux-musl --release local all
 
 compile:
 	cargo build --release
+
+compile-musl:
+	cargo build --target x86_64-unknown-linux-musl --release
 
 compileDocker: clean
 	docker run --rm -it -v $$(pwd):/compile -e TARGET_UID="$$(id --user)" -e TARGET_GID="$$(id --group)" dns2utf8/rust-old
