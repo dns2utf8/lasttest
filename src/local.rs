@@ -14,7 +14,7 @@ pub fn main_local(args : &::Args, pool : &ThreadPool) {
   if args.cmd_static {
     println!("\nStatic started...");
     let start = Instant::now();
-    run_static(&pool);
+    run_static(pool);
     let duration = start.elapsed();
     println!("Static finished <=> pool.active_count() = {} // duration = {:?}\n", pool.active_count(), duration);
   }
@@ -22,7 +22,7 @@ pub fn main_local(args : &::Args, pool : &ThreadPool) {
   if args.cmd_communicating {
     println!("\nCommunicating started...");
     let start = Instant::now();
-    run_communicating(&pool);
+    run_communicating(pool);
     let duration = start.elapsed();
     println!("Communicating finished <=> pool.active_count() = {} // duration = {:?}\n", pool.active_count(), duration);
   }
@@ -30,7 +30,7 @@ pub fn main_local(args : &::Args, pool : &ThreadPool) {
   if args.cmd_chain {
     println!("\nChain started...");
     let start = Instant::now();
-    run_chain(&pool);
+    run_chain(pool);
     let duration = start.elapsed();
     println!("Chain finished <=> pool.active_count() = {} // duration = {:?}\n", pool.active_count(), duration);
   }
@@ -38,7 +38,7 @@ pub fn main_local(args : &::Args, pool : &ThreadPool) {
   if args.cmd_flood {
     println!("\nFlood started...");
     let start = Instant::now();
-    run_flood(&pool);
+    run_flood(pool);
     let duration = start.elapsed();
     println!("Flood finished <=> pool.active_count() = {} // duration = {:?}\n", pool.active_count(), duration);
   }
@@ -46,7 +46,7 @@ pub fn main_local(args : &::Args, pool : &ThreadPool) {
   if args.cmd_mesh {
     println!("\nMesh started...");
     let start = Instant::now();
-    run_mesh(&pool);
+    run_mesh(pool);
     let duration = start.elapsed();
     println!("Mesh finished <=> pool.active_count() = {} // duration = {:?}\n", pool.active_count(), duration);
   }
@@ -203,11 +203,8 @@ pub fn run_flood(pool: &ThreadPool) {
   pool.execute(move || {
     let mut inside = 0;
     for _ in 0..TEST_TASKS {
-      loop {
-        match r_inside.recv().unwrap() {
-          Some(n) => inside += n,
-          None => break
-        }
+      while let Some(n) = r_inside.recv().unwrap() {
+        inside += n
       }
     }
     
@@ -240,11 +237,8 @@ pub fn run_flood(pool: &ThreadPool) {
   // Collect all outside
   let mut outside = 0;
   for _ in 0..TEST_TASKS {
-    loop {
-      match r_outside.recv().unwrap() {
-        Some(n) => outside += n,
-        None => break
-      }
+    while let Some(n) = r_outside.recv().unwrap() {
+      outside += n
     }
   }
   println!("flood.collected all outside: {}", outside);

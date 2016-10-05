@@ -30,3 +30,11 @@ dockerContainer:
 
 musl:
 	cargo build --release --target=x86_64-unknown-linux-musl
+
+setupClippy:
+	rustup run nightly cargo uninstall clippy
+	rustup update
+	rustup run nightly cargo install clippy
+
+clippy:
+	rustup run nightly cargo clippy --release
