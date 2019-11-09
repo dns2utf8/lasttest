@@ -8,17 +8,21 @@ extern crate rand;
 extern crate crossbeam;
 extern crate num_cpus;
 extern crate docopt;
-extern crate rustc_serialize;
+//extern crate rustc_serialize;
+extern crate serde;
+
+//extern crate mpi;
 
 mod local;
-mod net;
+//mod net;
 
 use local::main_local;
-use net::main_net;
+//use net::main_net;
 
 use std::time::{Instant};
 use threadpool::ThreadPool;
 use docopt::Docopt;
+use serde::Deserialize;
 
 
 const USAGE: &'static str = "
@@ -40,7 +44,7 @@ The tests are split into two groups:
   net       running on two machines and transfer load betweend them
 ";
 
-#[derive(Debug,PartialEq,RustcDecodable)]
+#[derive(Debug,PartialEq,Deserialize)]
 pub struct Args {
   // global options
   flag_logical: bool,
@@ -118,7 +122,7 @@ fn validate_args(a : Args) -> Result<Args,String>  {
 
 fn main() {
   let args: Args = Docopt::new(USAGE)
-                            .and_then(|d| d.decode())
+                            .and_then(|d| d.deserialize())
                             .unwrap_or_else(|e| e.exit());
   let args: Args = validate_args(args).unwrap();
   let num_threads = if args.flag_logical {
@@ -129,7 +133,7 @@ fn main() {
   
   println!("Hello, lasttest!\n\nnum_threads: {}\nTEST_TASKS: {}\nVERSUCHE: {}", num_threads, TEST_TASKS, VERSUCHE);
   
-  let pool = ThreadPool::new_with_name("lasttest.local".into(), num_threads);
+  let pool = ThreadPool::with_name("lasttest.local".into(), num_threads);
   
   let start = Instant::now();
 
@@ -138,9 +142,9 @@ fn main() {
     main_local(&args, &pool);
   }
   
-  if args.cmd_net {
+  /*if args.cmd_net {
     main_net(&args, &pool);
-  }
+  }*/
 
   println!("\n Was running for {:?}\n", start.elapsed());
 }

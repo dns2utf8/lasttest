@@ -194,6 +194,9 @@ let versuche = VERSUCHE;
 }
 
 
+/// Calculate PI with montecarlo
+///
+/// Transmit every induvidual measure over a channel
 pub fn run_flood(pool: &ThreadPool) {
   let (t_inside, r_inside) = channel();
   let (t_outside, r_outside) = channel();
