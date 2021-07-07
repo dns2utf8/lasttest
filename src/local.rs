@@ -1,9 +1,7 @@
 use TEST_TASKS;
 use VERSUCHE;
 
-use crossbeam::sync::chase_lev;
-use crossbeam::sync::chase_lev::Steal::{Abort, Data, Empty};
-use rand;
+use crossbeam::deque::{Steal, Worker};
 use rand::{Rng, SeedableRng};
 use std;
 use std::sync::mpsc::channel;
@@ -324,7 +322,8 @@ pub fn run_mesh(pool: &ThreadPool) {
     }
     println!("Pool size #0: {}", pool.active_count());
 
-    let (worker, stealer) = chase_lev::deque();
+    let worker = Worker::new_fifo();
+    let stealer = worker.stealer();
     pool.execute(move || {
         let mut i = 0;
         for _ in 0..n_v {
@@ -342,23 +341,26 @@ pub fn run_mesh(pool: &ThreadPool) {
         let tx3 = tx3.clone();
 
         pool.execute(move || {
+            let mut n_tries_remaining = 256isize;
             let mut rng = loop {
                 match stealer.steal() {
-                    Empty => {
-                        sleep(1);
+                    // Abort
+                    Steal::Empty if n_tries_remaining < 0 => {
+                        println!("Aborting worker...");
+                        tx3.send(None).unwrap();
+                        return;
                     }
-                    Data(seed_in) => {
+                    Steal::Empty | Steal::Retry => {
+                        sleep(1);
+                        n_tries_remaining -= 1;
+                    }
+                    Steal::Success(seed_in) => {
                         let mut seed = [0; 32];
                         for (i, b) in seed_in.as_bytes().iter().take(32).enumerate() {
                             seed[i] = *b;
                         }
                         //println!("run_communicating.step2 steal: {:?}", seed);
                         break rand::rngs::StdRng::from_seed(seed);
-                    }
-                    Abort => {
-                        println!("Aborting worker...");
-                        tx3.send(None).unwrap();
-                        return;
                     }
                 }
             };

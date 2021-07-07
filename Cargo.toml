@@ -1,6 +1,6 @@
 [package]
 name = "lasttest"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Stefan Schindler <dns2utf8@estada.ch>"]
 
 [dependencies]
@@ -8,7 +8,7 @@ threadpool = "1.8"
 #threadpool = { git="https://github.com/dns2utf8/rust-threadpool.git", branch="atomic" }
 rand = "0.8"
 #random = "0.9"
-crossbeam = "0.3"
+crossbeam = "0.8"
 num_cpus = "1.0"
 docopt = "1"
 serde = { version = "1", features = ["derive"] }
